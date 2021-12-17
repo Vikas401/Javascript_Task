@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+ 
+function processStatistics(startDate, endDate) {
+  const dates = [];
+  let currentDate = startDate;
+  const addDays = function (days) {
+    const date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
+  };
+  while (currentDate <= endDate) {
+    dates.push(currentDate);
+    currentDate = addDays.call(currentDate, 1)
+  }
+  return dates;
+}
+//without date passing
+// const dates = processStatistics();
+
+//with date passing
+const dates = processStatistics(new Date(2019, 3, 1), new Date(2019, 3, 2));
+var output = {};
+var dateOutput = {};
+var data = [];
+const api_url = "https://bitbucket.org/!api/2.0/snippets/tawkto/aA8zqE/4f62624a75da6d1b8dd7f70e53af8d36a1603910/files/webstats.json";
+async function gatData(url) {
+  const response  = await fetch(url);
+  
+  data = await response.json();
+  var chatSum = 0;
+  var missedChatSum = 0;
+  var filterDates, filterResDates, finalArray = [],filterResDatesWithId = [], filterDatesWithId = [];
+  var sumWithDate = 0;
+  var missedChatSumWithDate = 0;
+  var websiteId;
+  var resultWithDate = [];
+  
+    if(data && dates.length != 0) {
+    dates.map((val) => {
+      var date = new Date(val),
+          mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+          day = ("0" + (date.getDate() + 1)).slice(-2);
+      filterDates = [date.getFullYear(), mnth, day].join("-");
+           data.map((response) => {
+         var date = new Date(response.date),
+          mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+          day = ("0" + (date.getDate() + 1)).slice(-2);
+      filterResDates = [date.getFullYear(), mnth, day].join("-");  
+       if(filterDates === filterResDates){
+          finalArray.push(response)
+        }
+       });
+      })
+      finalArray.reduce(function(res, value) {
+  if (!res[value.websiteId]) {
+    res[value.websiteId] = { websiteId: value.websiteId, chats: 0, missedChats: 0 };
+    resultWithDate.push(res[value.websiteId])
+  }
+  res[value.websiteId].chats += value.chats;
+  res[value.websiteId].missedChats += value.missedChats;
+  return res;
+}, {});
+      console.log("Output With Date----",resultWithDate);
+   
+  }else{
+   var array = data;
+var resultWithoutDate = [];
+array.reduce(function(res, value) {
+  if (!res[value.websiteId]) {
+    res[value.websiteId] = { websiteId: value.websiteId, chats: 0, missedChats: 0 };
+    resultWithoutDate.push(res[value.websiteId])
+  }
+  res[value.websiteId].chats += value.chats;
+  res[value.websiteId].missedChats += value.missedChats;
+  return res;
+}, {});
+console.log("Output Without Date--------",resultWithoutDate)
+  }
+};
+gatData(api_url);
+
+    </script>
+  </head>
+  <body onload="getData(api_url)"></body>
+</html>
+
+
